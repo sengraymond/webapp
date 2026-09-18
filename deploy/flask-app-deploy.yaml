@@ -1,0 +1,75 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-flask-app
+  namespace: flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: webapp-flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+        component: webapp-flask-app
+    spec:
+      volumes:
+        - name: tls-certificate
+          secret:
+            secretName: webapp-tls
+            defaultMode: 0444
+        - name: mysql-certificate
+          secret:
+            secretName: mysql-ca
+            defaultMode: 0444
+      containers:
+        - name: webapp-flask-app
+          image: ca6bc6a1b91aacr.azurecr.io/webapp:20260917.5
+          ports:
+            - name: webapp-port
+              containerPort: 3000
+          imagePullPolicy: Always
+          volumeMounts:
+            # Mount TLS certificate and key
+            - name: tls-certificate
+              mountPath: /webapp/cert.pem
+              subPath: tls.crt
+              readOnly: true
+            - name: tls-certificate
+              mountPath: /webapp/key.pem
+              subPath: tls.key
+              readOnly: true
+            # Mount MySQL CA certificate
+            - name: mysql-certificate
+              mountPath: /webapp/mysql.pem
+              subPath: mysql.pem
+              readOnly: true
+          env:
+            # Load APP Secret Key
+            - name: APP_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: key
+            # Load DB username
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: username
+            # Load DB password
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+            # Load DB Config
+            - name: DB_HOST
+              value: "mysql-database-93453.mysql.database.azure.com"
+            - name: DB_NAME
+              value: "logistics"
+            - name: DB_PORT
+              value: "3306"
+

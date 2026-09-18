@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GenLogistics</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+    <style>
+        :root {
+            --ink: #17252f;
+            --muted: #6d7d85;
+            --line: #dce5e6;
+            --teal: #087f8c;
+            --teal-dark: #05606a;
+            --mint: #e8f5f1;
+            --paper: #f7faf9;
+        }
+        body { background: var(--paper); color: var(--ink); font-family: "Trebuchet MS", sans-serif; }
+        .navbar-inverse { background: var(--ink); border: 0; border-radius: 0; margin-bottom: 0; }
+        .navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav > li > a { color: #e8f5f1; }
+        .navbar-inverse .navbar-nav > li > a:hover { background: var(--teal-dark); }
+        .inventory-header { background: var(--ink); color: white; padding: 42px 0 50px; }
+        .eyebrow { color: #8bd1c6; font-size: 12px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        h1 { font-family: Georgia, serif; font-size: 42px; margin: 8px 0 10px; }
+        .subtitle { color: #b9cbca; font-size: 16px; margin: 0; }
+        .content { margin-top: -22px; padding-bottom: 50px; }
+        .stats { background: white; border: 1px solid var(--line); box-shadow: 0 8px 20px rgba(23, 37, 47, .06); margin-bottom: 25px; padding: 20px 25px; }
+        .stat { border-right: 1px solid var(--line); }
+        .stat:last-child { border: 0; }
+        .stat-label { color: var(--muted); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+        .stat-value { color: var(--teal-dark); font-family: Georgia, serif; font-size: 28px; font-weight: bold; margin-top: 3px; }
+        .panel { background: white; border: 1px solid var(--line); padding: 25px; }
+        .panel-title { font-family: Georgia, serif; font-size: 24px; margin: 0 0 20px; }
+        .form-control { border-color: var(--line); box-shadow: none; height: 42px; }
+        .form-control:focus { border-color: var(--teal); box-shadow: 0 0 0 2px rgba(8, 127, 140, .12); }
+        .btn-teal { background: var(--teal); border-color: var(--teal); color: white; font-weight: bold; height: 42px; }
+        .btn-teal:hover { background: var(--teal-dark); border-color: var(--teal-dark); color: white; }
+        .inventory-image-preview { margin-top: 28px; }
+        .inventory-image-preview h3 { font-family: Georgia, serif; font-size: 20px; margin: 0 0 12px; }
+        .inventory-image { background: var(--paper); border: 1px solid var(--line); display: block; max-height: 240px; object-fit: cover; width: 100%; }
+        .inventory-image-message { color: var(--muted); font-size: 13px; margin: 0; }
+        .table { margin-bottom: 0; }
+        .table > thead > tr > th { border-bottom: 2px solid var(--ink); color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+        .table > tbody > tr > td { border-top: 1px solid var(--line); padding: 16px 8px; vertical-align: middle; }
+        .item-name { font-weight: bold; }
+        .item-name-button { background: none; border: 0; color: var(--teal-dark); font: inherit; padding: 0; text-align: left; }
+        .item-name-button:hover, .item-name-button:focus { color: var(--teal); text-decoration: underline; }
+        .quantity-form { display: flex; max-width: 145px; }
+        .quantity-form .form-control { height: 34px; }
+        .quantity-form .btn { height: 34px; }
+        .stock-badge { background: var(--mint); color: var(--teal-dark); font-size: 11px; padding: 5px 8px; text-transform: uppercase; }
+        .stock-badge.low { background: #fff1df; color: #a45a00; }
+        .btn-delete { background: transparent; border: 0; color: #a45a5a; padding: 5px 0; }
+        .btn-delete:hover { color: #743939; text-decoration: underline; }
+        .empty-state { color: var(--muted); padding: 35px 0 !important; text-align: center; }
+        .alert { border-radius: 0; }
+        @media (max-width: 767px) {
+            h1 { font-size: 34px; }
+            .stat { border-bottom: 1px solid var(--line); border-right: 0; margin-bottom: 15px; padding-bottom: 12px; }
+            .stat:last-child { border-bottom: 0; margin-bottom: 0; }
+            .panel { padding: 18px 12px; }
+            .table-responsive { border: 0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('comments') }}">GenLogistics</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right" id="navbar">
+                <li class="active"><a href="{{ url_for('inventory_view') }}">Inventory</a></li>
+                {% if current_user.role == 'logistics' %}
+                <li><a href="{{ url_for('inventory') }}">Manage stock</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('logout') }}">Log out</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="inventory-header">
+        <div class="container">
+            <div class="eyebrow">Operations / Stockroom</div>
+            <h1>Inventory control</h1>
+        </div>
+    </header>
+
+    <main class="container content">
+        {% set total_units = items | sum(attribute='quantity') %}
+        {% set low_stock = items | selectattr('quantity', 'lt', 5) | list | length %}
+        <section class="row stats" aria-label="Inventory summary">
+            <div class="col-sm-4 stat">
+                <div class="stat-label">Tracked items</div>
+                <div class="stat-value">{{ items | length }}</div>
+            </div>
+            <div class="col-sm-4 stat">
+                <div class="stat-label">Total units</div>
+                <div class="stat-value">{{ total_units }}</div>
+            </div>
+            <div class="col-sm-4 stat">
+                <div class="stat-label">Needs attention</div>
+                <div class="stat-value">{{ low_stock }}</div>
+            </div>
+        </section>
+
+        {% if error %}
+            <div class="alert alert-warning" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <section class="panel">
+            <div class="row">
+                <div class="col-md-5">
+                    <h2 class="panel-title">Add an item</h2>
+                    <form method="POST" action="{{ url_for('inventory') }}">
+                        <input type="hidden" name="action" value="add">
+                        <div class="form-group">
+                            <label for="item-name">Item name</label>
+                            <input class="form-control" id="item-name" name="name" required maxlength="128" placeholder="e.g. Safety gloves">
+                        </div>
+                        <div class="form-group">
+                            <label for="item-quantity">Starting quantity</label>
+                            <input class="form-control" id="item-quantity" name="quantity" type="number" min="0" required placeholder="0">
+                        </div>
+                        <button class="btn btn-teal" type="submit">Add to Inventory</button>
+                    </form>
+                    <div class="inventory-image-preview" aria-live="polite">
+                        <h3 id="preview-title">Item image</h3>
+                        <p class="inventory-image-message" id="preview-message">Select an item name to view its image.</p>
+                        <img class="inventory-image" id="inventory-image" alt="" hidden>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <h2 class="panel-title">Current stock</h2>
+                    <div class="form-group">
+                        <label class="sr-only" for="inventory-search">Search inventory</label>
+                        <input class="form-control" id="inventory-search" type="search" placeholder="Search items..." oninput="filterInventory(this.value)">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="inventory-table">
+                            <thead><tr><th>Item</th><th>Quantity</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td class="item-name">
+                                        <button class="item-name-button" type="button" data-item-name="{{ item.name }}" onclick="showInventoryImage(this.dataset.itemName)">{{ item.name }}</button>
+                                    </td>
+                                    <td>
+                                        <form class="quantity-form" method="POST" action="{{ url_for('inventory') }}">
+                                            <input type="hidden" name="action" value="update">
+                                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                                            <input class="form-control" name="quantity" type="number" min="0" value="{{ item.quantity }}" aria-label="Quantity for {{ item.name }}">
+                                            <button class="btn btn-default" type="submit" title="Save quantity">Save</button>
+                                        </form>
+                                    </td>
+                                    <td><span class="stock-badge{% if item.quantity < 5 %} low{% endif %}">{% if item.quantity < 5 %}Low stock{% else %}In stock{% endif %}</span></td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('inventory') }}">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                                            <button class="btn-delete" type="submit" title="Remove {{ item.name }}">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td class="empty-state" colspan="4">No items yet. Add your first stock item to get started.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function showInventoryImage(itemName) {
+            var image = document.getElementById('inventory-image');
+            var message = document.getElementById('preview-message');
+            var title = document.getElementById('preview-title');
+            var staticPath = "{{ url_for('static', filename='') }}";
+
+            title.textContent = itemName;
+            image.alt = itemName;
+            image.src = staticPath + encodeURIComponent(itemName) + '.jpg';
+            image.hidden = false;
+            message.textContent = 'Loading image...';
+            image.onload = function () {
+                message.textContent = '';
+            };
+            image.onerror = function () {
+                image.hidden = true;
+                message.textContent = 'No image available for this item.';
+            };
+        }
+
+        function filterInventory(query) {
+            var rows = document.querySelectorAll('#inventory-table tbody tr');
+            var search = query.toLowerCase();
+            rows.forEach(function (row) {
+                row.style.display = row.textContent.toLowerCase().indexOf(search) !== -1 ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+        <style>
+            body {
+                background: #17252f url("{{ url_for('static', filename='inventory-background.jpg' if environment == 'Production' else 'matrix-background.gif') }}") center center / cover fixed no-repeat;
+                padding-bottom: 42px;
+                min-height: 100vh;
+            }
+            .development-banner {
+                background: #c62828;
+                bottom: 0;
+                color: #fff;
+                height: 42px;
+                left: 0;
+                line-height: 42px;
+                overflow: hidden;
+                position: fixed;
+                right: 0;
+                text-align: center;
+                z-index: 1000;
+            }
+            .development-banner span {
+                animation: roll-banner 12s linear infinite;
+                display: inline-block;
+                white-space: nowrap;
+            }
+            @keyframes roll-banner {
+                from {
+                    transform: translateX(100vw);
+                }
+                to {
+                    transform: translateX(-100%);
+                }
+            }
+        </style>
+
+        <title>GenLogistics</title>
+    </head>
+
+    <body>
+        <nav class="navbar navbar-inverse">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">GenLogistics</a>
+                </div>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('inventory_view') }}">Inventory</a></li>
+                        <li><a href="{{ url_for('logout') }}">Log out</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Log in</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+
+        {% if environment != 'Production' %}
+            <div class="development-banner" role="status">
+                <span>Development: Web Site Maintenance in progress ...</span>
+            </div>
+        {% endif %}
+
+    </body>
+</html>

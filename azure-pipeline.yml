@@ -1,0 +1,47 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: Default
+
+steps:
+
+- task: CmdLine@2
+  displayName: 'Verify Python syntax'
+  inputs:
+    script: 'python3 -m compileall -q .'
+
+- task: CmdLine@2
+  displayName: 'Build container'
+  inputs:
+    script: |
+      docker build -t ca6bc6a1b91aacr.azurecr.io/webapp:$(Build.BuildNumber) .
+
+- task: CmdLine@2
+  displayName: 'Push image to Azure Container Registry'
+  inputs:
+    script: 'docker push ca6bc6a1b91aacr.azurecr.io/webapp:$(Build.BuildNumber)'
+
+- task: CmdLine@2
+  displayName: 'Update deployment with new image'
+  inputs:
+    script: 'kubectl set image --namespace=flask-app deployment webapp-flask-app webapp-flask-app=ca6bc6a1b91aacr.azurecr.io/webapp:$(Build.BuildNumber)'
+
+- task: CmdLine@2
+  displayName: Cleanup
+  inputs:
+    script: |
+      set -x
+      cd $(Pipeline.Workspace)/..
+      echo "cleaning directory"
+      for n in $(seq 1 20); do
+        sudo rm -rf "$n"
+      done
+  condition: succeededOrFailed()
+
+ 
