@@ -26,7 +26,7 @@ spec:
             defaultMode: 0444
       containers:
         - name: webapp-flask-app
-          image: ca6bc6a1b91aacr.azurecr.io/webapp:20260917.5
+          image: ghcr.io/sengraymond/webapp:latest
           ports:
             - name: webapp-port
               containerPort: 3000
