@@ -21,11 +21,11 @@ RUN chown -R appuser:appgroup /webapp && \
 # Switch to the non-root user
 USER appuser
 
-# Install Python packages required for the application
-RUN pip install --no-cache-dir -r /webapp/requirements.txt
-
 # Set the environment PATH (appends the new path to existing system paths)
 ENV PATH="/home/appuser/.local/bin:${PATH}"
+
+# Install Python packages required for the application
+RUN pip install --no-cache-dir -r /webapp/requirements.txt
 
 # Run Flask
 ENV FLASK_APP=/webapp/flask_app.py

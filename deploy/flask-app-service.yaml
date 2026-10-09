@@ -8,10 +8,6 @@ spec:
   selector:
     app: flask-app
   ports:
-    - name: portfolio-port
-      protocol: TCP
-      port: 80
-      targetPort: 5000
     - name: webapp-port
       protocol: TCP
       port: 443
