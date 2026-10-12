@@ -1,0 +1,34 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+runs-on: self-hosted
+
+steps:
+
+- task: CmdLine@2
+  displayName: 'Verify Python syntax'
+  inputs:
+    script: 'python3 -m compileall -q .'
+
+- task: CmdLine@2
+  displayName: 'Build container'
+  inputs:
+    script: |
+      docker build -t ghcr.io/sengraymond/webapp:$(Build.BuildNumber) .
+
+- task: CmdLine@2
+  displayName: 'Push image to Azure Container Registry'
+  inputs:
+    script: 'docker push ghcr.io/sengraymond/webapp:$(Build.BuildNumber)'
+
+- task: CmdLine@2
+  displayName: 'Update deployment with new image'
+  inputs:
+    script: 'kubectl set image --namespace=flask-app deployment webapp-flask-app webapp-flask-app=ghcr.io/sengraymond/webapp:$(Build.BuildNumber)'
+
+ 
