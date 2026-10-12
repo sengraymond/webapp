@@ -1,0 +1,45 @@
+name: Python CI-CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    # Self-hosted runner label
+    runs-on: JediKnight
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+
+      # Python Compile Test (Syntax check without running full tests)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-workspace-version: '3.14' # Change to your required Python version
+
+      - name: Python Compile Test
+        run: |
+          python -m compileall -q .
+
+
+      # Docker Build and Push
+      - name: Build Docker Image
+        run: |
+          docker build -t ghcr.io/sengraymond/webapp:${{ github.run_number }} .
+
+
+      - name: Push Docker Image
+        run: |
+          docker push ghcr.io/sengraymond/webapp:${{ github.run_number }}
+
+
+      # Kubectl Set Image
+      - name: Update Kubernetes Deployment Image
+        run: |
+          kubectl set image --namespace=flask-app deployment webapp-flask-app webapp-flask-app=ghcr.io/sengraymond/webapp:${{ github.run_number }}
+ 
+
