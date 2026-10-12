@@ -1,15 +1,23 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# 1. The name of the workflow as it appears in the GitHub Actions tab
+name: Github Action Pipeline
 
-trigger:
-- main
+# 2. The trigger events that kick off the workflow automatically
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Allows you to manually trigger this workflow from the UI
 
-runs-on: self-hosted
+# 3. The actual work block
+jobs:
+  # Define a job called "build-and-test"
+  build-and-test:
+    # Specify the type of runner machine the job will run on
+	runs-on: self-hosted
 
+# The sequential steps that the job will execute
 steps:
-
 - task: CmdLine@2
   displayName: 'Verify Python syntax'
   inputs:
