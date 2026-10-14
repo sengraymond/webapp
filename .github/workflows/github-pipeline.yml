@@ -16,14 +16,9 @@ jobs:
 
 
       # Python Compile Test (Syntax check without running full tests)
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-workspace-version: '3.14' # Change to your required Python version
-
       - name: Python Compile Test
         run: |
-          python -m compileall -q .
+          python3 -m compileall -q .
 
 
       # Docker Build and Push
