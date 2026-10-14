@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-environment = "Maintenance"
+environment = "Production"
 
 db_host = os.environ.get('DB_HOST')
 db_name = os.environ.get('DB_NAME')
