@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     # Self-hosted runner label
-    runs-on: JediKnight
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Repository
