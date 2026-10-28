@@ -29,8 +29,8 @@ RUN pip install --no-cache-dir -r /webapp/requirements.txt
 
 # Run Flask
 ENV FLASK_APP=/webapp/flask_app.py
-CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
-# CMD ["flask", "run", "--host=0.0.0.0", "--port=3000", "--cert=/webapp/cert.pem", "--key=/webapp/key.pem"]
+# CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=3000", "--cert=/webapp/cert.pem", "--key=/webapp/key.pem"]
 
 # Make HTTPS port 3000 available to the world outside this container
 EXPOSE 3000
