@@ -3,6 +3,10 @@ kind: Service
 metadata:
   name: flask-app-service
   namespace: flask-app
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-subnets: >
+      subnet-061061ff63b9a7016,subnet-05548c63ae0aa0742,subnet-0de4b7cc7459e34bf
 spec:
   type: LoadBalancer
   selector:
@@ -12,3 +16,5 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3000
+
+
