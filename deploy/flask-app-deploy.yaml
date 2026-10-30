@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,6 +13,7 @@ spec:
       labels:
         app: flask-app
         component: webapp-flask-app
+
     spec:
       volumes:
         - name: tls-certificate
@@ -24,13 +24,33 @@ spec:
           secret:
             secretName: mysql-ca
             defaultMode: 0444
+
       containers:
         - name: webapp-flask-app
           image: ghcr.io/sengraymond/webapp:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "5m"       # Starting baseline — tune based on observed usage
+              memory: "256Mi"
+            limits:
+              cpu: "10m"       # Cap at 2× the request
+              memory: "512Mi"
           ports:
             - name: webapp-port
               containerPort: 3000
-          imagePullPolicy: Always
+
+          # Check if the app is still alive
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+              scheme: HTTPS       # <-- Critical: Tells kubelet to use HTTPS
+            initialDelaySeconds: 15  # Wait 15s before first check
+            periodSeconds: 20        # Check every 20s
+            timeoutSeconds: 2        # Must respond within 2s
+            failureThreshold: 3      # Restart after 3 consecutive failures
+
           volumeMounts:
             # Mount TLS certificate and key
             - name: tls-certificate
@@ -46,6 +66,7 @@ spec:
               mountPath: /webapp/mysql.pem
               subPath: mysql.pem
               readOnly: true
+
           env:
             # Load APP Secret Key
             - name: APP_SECRET_KEY
@@ -67,7 +88,7 @@ spec:
                   key: password
             # Load DB Config
             - name: DB_HOST
-              value: "mysql-database-93453.mysql.database.azure.com"
+              value: "mysql-database-93453.cbak40mmub1m.ap-southeast-1.rds.amazonaws.com"
             - name: DB_NAME
               value: "logistics"
             - name: DB_PORT

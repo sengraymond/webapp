@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import current_user, login_user, logout_user, login_required, LoginManager, UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -55,6 +55,15 @@ class Inventory(db.Model):
     quantity = db.Column(db.Integer, nullable=False)    
 
 
+def check_dependencies():
+    """
+    Add your actual health logic here.
+    Example: Test your database connection pool or Redis cache.
+    """
+    # Return False if a critical dependency is down
+    return True
+
+
 @app.route("/", methods=["GET", "POST"])
 def comments():
     if request.method == "GET":
@@ -64,6 +73,16 @@ def comments():
         return redirect(url_for('comments'))
 
     return redirect(url_for('comments'))
+
+
+@app.route('/ready', methods=['GET'])
+def readiness_check():
+    if check_dependencies():
+        # HTTP 200 tells Kubernetes this pod is healthy and ready for traffic
+        return jsonify({"status": "ready"}), 200
+    else:
+        # HTTP 503 tells Kubernetes to temporarily remove this pod from the LB
+        return jsonify({"status": "not ready", "reason": "database unavailable"}), 503
 
 
 @app.route("/login/", methods=["GET", "POST"])
