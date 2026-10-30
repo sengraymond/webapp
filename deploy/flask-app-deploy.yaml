@@ -27,7 +27,7 @@ spec:
 
       containers:
         - name: webapp-flask-app
-          image: ghcr.io/sengraymond/webapp:latest
+          image: ghcr.io/sengraymond/webapp:7
           imagePullPolicy: Always
           resources:
             requests:
@@ -41,15 +41,21 @@ spec:
               containerPort: 3000
 
           # Check if the app is still alive
-          livenessProbe:
-            httpGet:
-              path: /ready
-              port: 3000
-              scheme: HTTPS       # <-- Critical: Tells kubelet to use HTTPS
-            initialDelaySeconds: 15  # Wait 15s before first check
-            periodSeconds: 20        # Check every 20s
-            timeoutSeconds: 2        # Must respond within 2s
-            failureThreshold: 3      # Restart after 3 consecutive failures
+          readinessProbe:
+          #  httpGet:
+          #    path: /ready
+          #    port: 3000
+          #    scheme: HTTPS       # <-- Critical: Tells kubelet to use HTTPS
+            exec:
+              command:
+              - curl
+              - -k
+              - -v
+              - https://127.0.0.1/ready  # Targets localhost internally
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 2
 
           volumeMounts:
             # Mount TLS certificate and key
